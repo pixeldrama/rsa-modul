@@ -18,10 +18,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | Define abstract key data type
-module RSAModul.Key where
+-- | Write public keys and private keys to file system
+module RSAModul.WriteKeys where
 
-data Key = Key {
-  value :: Int,
-  modulus :: Int
-  } deriving (Show, Read, Eq)
+import System.IO
+import RSAModul.KeyGen
+
+writeKeys = do
+  keyPair <- getKeys  
+  writeFile "./pubkey" (show $ fst keyPair)
+  writeFile "./privkey" (show $ snd keyPair)
+  
+writeNamedKeys name = do
+  keyPair <- getKeys  
+  writeFile ("./" ++ name ++ ".pub") (show $ fst keyPair)
+  writeFile ("./" ++ name) (show $ snd keyPair)

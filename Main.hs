@@ -18,10 +18,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | Define abstract key data type
-module RSAModul.Key where
+module Main where
 
-data Key = Key {
-  value :: Int,
-  modulus :: Int
-  } deriving (Show, Read, Eq)
+import System
+import System.IO
+
+import RSAModul.WriteKeys
+
+
+usageMessage = do putStrLn "usage : keygen | encrypt | decrypt"
+
+main = do
+  args <- getArgs
+  let sizeArgs = length args
+  parseArgs args sizeArgs    
+  
+parseArgs args sizeArgs 
+  | sizeArgs == 0 = usageMessage
+  | otherwise = case (args!!0) of 
+    "keygen" -> case sizeArgs of
+      1 -> writeKeys
+      2 -> writeNamedKeys (args!!1)
+    _ -> usageMessage

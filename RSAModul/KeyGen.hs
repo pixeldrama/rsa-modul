@@ -19,10 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 -- | KeyGen generates a public and a private key
-module KeyGen where
+module RSAModul.KeyGen(getKeys) where
 
 import System.Random
-import Key
+import RSAModul.Key
 
 -- set max for primes
 maxPrim :: Int
@@ -55,6 +55,7 @@ n_phi = do
   return $ (p * q, (p - 1) * (q -1)) 
   
 -- | calculate the final keys
+getKeys :: IO (Key, Key)
 getKeys = do
   (n, phi) <- n_phi
   let potentialKeys = coprimes phi
@@ -65,8 +66,8 @@ getKeys = do
       
   -- get the second key
   res <- extendEuklid (value privateKey) phi    
-  let publicKey = Key ((fst res) `mod` phi) phi
-  return (privateKey, publicKey, n)
+  let publicKey = Key ((fst res) `mod` phi) n
+  return (privateKey, publicKey)
   where
     -- calculate all the coprimes until phi
     coprimes phi = [y | y <-[(div phi 2)..phi],  ggT y phi == 1]
