@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Main where
+module Main(main) where
 
 import System
 import System.IO
