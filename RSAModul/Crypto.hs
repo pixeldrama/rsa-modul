@@ -19,13 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 -- | The crypto modul.
-module Crypto where
+module RSAModul.Crypto where
   
 import RSAModul.Key
 import Char
+import Data.Text as T
+import Data.Text.Encoding as E
+import Data.ByteString (ByteString)
   
-encrypt :: String -> Key -> [Char]
-encrypt str (Key v n) = map (\c -> chr (fromIntegral ((charToInt c)^v `mod` n)::Int)) str
+encrypt :: String -> Key -> String
+encrypt str (Key v n) = unpack $ T.map (\c -> chr (fromIntegral ((charToInt c)^v `mod` n)::Int)) text
   where
+    text = pack str
     --convert Char->Int->Integer
     charToInt c = fromIntegral (fromEnum c)    
