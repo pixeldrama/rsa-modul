@@ -22,6 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module RSAModul.Key where
 
 data Key = Key {
-  value :: Int,
-  modulus :: Int
+  value :: Integer,
+  modulus :: Integer
   } deriving (Show, Read, Eq)

@@ -62,11 +62,11 @@ getKeys = do
       
   -- select a random value from the potential keys
   index <- randomRIO (0, (length potentialKeys) - 1)
-  let privateKey = Key (potentialKeys!!index) n
+  let privateKey = Key (fromIntegral $ potentialKeys!!index) $ fromIntegral n
       
   -- get the second key
-  res <- extendEuklid (value privateKey) phi    
-  let publicKey = Key ((fst res) `mod` phi) n
+  res <- extendEuklid (value privateKey) $ fromIntegral phi
+  let publicKey = Key ((fst res) `mod` (fromIntegral phi)) (fromIntegral n)
   return (privateKey, publicKey)
   where
     -- calculate all the coprimes until phi
