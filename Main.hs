@@ -24,9 +24,11 @@ import System
 import System.IO
 
 import RSAModul.WriteKeys
+import RSAModul.Key
+import RSAModul.Crypto
 
 
-usageMessage = do putStrLn "usage : keygen | encrypt | decrypt"
+usageMessage = do putStrLn "usage: keygen | encrypt <path/to/pubkey> <file> | decrypt <path/to/privkey> <file"
 
 main = do
   args <- getArgs
@@ -39,4 +41,17 @@ parseArgs args sizeArgs
     "keygen" -> case sizeArgs of
       1 -> writeKeys
       2 -> writeNamedKeys (args!!1)
+    "encrypt" -> case sizeArgs of
+      3 -> do
+        message <- readFile (args!!2)
+        key <- (readFile (args!!1) >>= return.read)
+        let encrMes = encrypt message key
+        writeFile ((args!!2)++ ".encr") encrMes
+      _ -> usageMessage
+    "decrypt" -> case sizeArgs of
+      3 -> do
+        message <- readFile (args!!2)
+        key <- (readFile (args!!1) >>= return.read)
+        putStrLn $ encrypt message key
+      _ -> usageMessage
     _ -> usageMessage
