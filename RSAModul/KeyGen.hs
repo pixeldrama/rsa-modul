@@ -34,53 +34,68 @@ createRandomPrimes =  do
   let l = length primes
   p <- randomRIO (div l 2, l - 1)
   q <- randomRIO (div l 2, l - 1)
-  if (p == q) then 
+  if (p == q) then
     createRandomPrimes
-    else   
+    else
     return (primes!!p, primes!!q)
   where
     -- very slow way to generate primes
     primes :: [Int]
     primes = sieve [2..maxPrim]
-      where 
+      where
         sieve [] = []
         sieve (l:ls) = l: sieve[x | x <-ls, mod x 2 /= 0]
-        
+
 -- | Calculate the modulus n and phi(n). The modulus is used for the
 -- public and private key and must be stored. Phi is the result of the
 -- Euler's phi function of n.
 n_phi :: IO (Int, Int) -- ^ the first value is n, the second phi(n)
-n_phi = do 
+n_phi = do
   (p,q) <- createRandomPrimes
-  return $ (p * q, (p - 1) * (q -1)) 
-  
+  return $ (p * q, (p - 1) * (q -1))
+
 -- | calculate the final keys
 getKeys :: IO (Key, Key)
 getKeys = do
   (n, phi) <- n_phi
   let potentialKeys = coprimes phi
-      
+
   -- select a random value from the potential keys
   index <- randomRIO (0, (length potentialKeys) - 1)
-  let privateKey = Key (fromIntegral $ potentialKeys!!index) $ fromIntegral n
-      
+  let publicKey = Key (fromIntegral $ potentialKeys!!index) $ fromIntegral n
+
   -- get the second key
-  res <- extendEuklid (value privateKey) $ fromIntegral phi
-  let publicKey = Key ((fst res) `mod` (fromIntegral phi)) (fromIntegral n)
-  return (privateKey, publicKey)
+  (a, b) <- extendEuklid (value publicKey) $ fromIntegral phi
+  let d = getFactor a b (value publicKey) (fromIntegral phi)
+
+  putStrLn $ "phi: " ++ (show phi)
+  putStrLn $ "public key: " ++ (show $ value publicKey)
+  putStrLn $ "choosen factor: " ++ (show d)
+  putStrLn $ "euklid: " ++ (show (a,b))
+
+  let privateKey = Key d (fromIntegral n)
+  return (publicKey, privateKey)
+
   where
     -- calculate all the coprimes until phi
     coprimes phi = [y | y <-[(div phi 2)..phi],  ggT y phi == 1]
     ggT a 0 = a
     ggT 0 b = b
-    ggT a b 
+    ggT a b
       | a > b = ggT b (mod a b)
       | otherwise = ggT a (mod b a)
 
-    extendEuklid a b 
+    getFactor a b f phi
+      | a*f `mod` phi == 1 = pos a
+      | otherwise = pos b
+        where
+          pos x
+            | x < 0 = phi + x
+            | otherwise = x
+
+    extendEuklid a b
       | b == 0 = return (1, 0)
       | otherwise = do
         let (q, r) = divMod a b
         (s, t) <- extendEuklid b r
         return (t, s - q * t)
-
