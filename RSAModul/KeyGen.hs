@@ -25,31 +25,32 @@ import System.Random
 import RSAModul.Key
 
 -- set max for primes
-maxPrim :: Int
-maxPrim = 100
+maxPrim :: Integer
+maxPrim = 20
 
 -- | Generates a tuple of distinct random primes
-createRandomPrimes :: IO (Int, Int)
+createRandomPrimes :: IO (Integer, Integer)
 createRandomPrimes =  do
   let l = length primes
-  p <- randomRIO (div l 2, l - 1)
-  q <- randomRIO (div l 2, l - 1)
+  p <- randomRIO (0, l - 1)
+  q <- randomRIO (0, l - 1)
   if (p == q) then
     createRandomPrimes
     else
-    return (primes!!p, primes!!q)
+    return (primes!!(fromIntegral p), primes!!(fromIntegral q))
   where
     -- very slow way to generate primes
-    primes :: [Int]
-    primes = sieve [2..maxPrim]
+    primes :: [Integer]
+    primes = sieve [2..]
       where
-        sieve [] = []
-        sieve (l:ls) = l: sieve[x | x <-ls, mod x 2 /= 0]
+        sieve (l:ls)  
+          | l <= maxPrim = l: sieve[x | x <-ls, mod x 2 /= 0]
+          | otherwise = []
 
 -- | Calculate the modulus n and phi(n). The modulus is used for the
 -- public and private key and must be stored. Phi is the result of the
 -- Euler's phi function of n.
-n_phi :: IO (Int, Int) -- ^ the first value is n, the second phi(n)
+n_phi :: IO (Integer, Integer) -- ^ the first value is n, the second phi(n)
 n_phi = do
   (p,q) <- createRandomPrimes
   return $ (p * q, (p - 1) * (q -1))
@@ -65,8 +66,8 @@ getKeys = do
   let publicKey = Key (fromIntegral $ potentialKeys!!index) $ fromIntegral n
 
   -- get the second key
-  (a, b) <- extendEuklid (value publicKey) $ fromIntegral phi
-  let d = getFactor a b (value publicKey) (fromIntegral phi)
+  (a, b) <- extendEuklid (value publicKey) phi
+  let d = getFactor a b (value publicKey) phi
 
   putStrLn $ "phi: " ++ (show phi)
   putStrLn $ "public key: " ++ (show $ value publicKey)
