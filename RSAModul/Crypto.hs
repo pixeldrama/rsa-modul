@@ -18,18 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | The crypto modul.
+-- | The crypto modul. There can be done some optimizations, because
+-- the modulo operation could be calcalute faster than the haskell
+-- function mod do.
 module RSAModul.Crypto where
   
 import RSAModul.Key
-import Char
-import Data.Text as T
-import Data.Text.Encoding as E
-import Data.ByteString (ByteString)
   
 encrypt :: String -> Key -> String
-encrypt str (Key v n) = unpack $ T.map (\c -> chr (fromIntegral ((charToInt c)^v `mod` n)::Int)) text
+encrypt str (Key v n) = map (\c -> toEnum (fromIntegral ((charToInt c)^v `mod` n)::Int)) str
   where
-    text = pack str
     --convert Char->Int->Integer
     charToInt c = fromIntegral (fromEnum c)    
