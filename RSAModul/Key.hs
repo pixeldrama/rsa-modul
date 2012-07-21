@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | Define abstract key data type
+-- | Define Key data type
 module RSAModul.Key where
 
 data Key = Key {
