@@ -18,7 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | KeyGen generates a public and a private key
+-- | KeyGen generates a public and a private key. This module contains
+-- some functions with O(n), so it's very slow for big keys.
 module RSAModul.KeyGen(getKeys) where
 
 import System.Random
@@ -26,24 +27,29 @@ import RSAModul.Key
 
 -- set max for primes
 maxPrim :: Integer
-maxPrim = 20
+maxPrim = 1000
 
 -- | Generates a tuple of distinct random primes
 createRandomPrimes :: IO (Integer, Integer)
 createRandomPrimes =  do
+
+  putStrLn "generating primes"
   let l = length primes
-  p <- randomRIO (0, l - 1)
-  q <- randomRIO (0, l - 1)
+  putStrLn "finished generating primes"
+
+  p <- randomRIO (div l 2, l - 1)
+  q <- randomRIO (div l 2, l - 1)
   if (p == q) then
     createRandomPrimes
-    else
+    else do
+    putStrLn "choose primes"
     return (primes!!(fromIntegral p), primes!!(fromIntegral q))
   where
     -- very slow way to generate primes
     primes :: [Integer]
     primes = sieve [2..]
       where
-        sieve (l:ls)  
+        sieve (l:ls)
           | l <= maxPrim = l: sieve[x | x <-ls, mod x 2 /= 0]
           | otherwise = []
 
@@ -59,27 +65,42 @@ n_phi = do
 getKeys :: IO (Key, Key)
 getKeys = do
   (n, phi) <- n_phi
-  let potentialKeys = coprimes phi
+
 
   -- select a random value from the potential keys
-  index <- randomRIO (0, (length potentialKeys) - 1)
-  let publicKey = Key (fromIntegral $ potentialKeys!!index) $ fromIntegral n
+  --index <- randomRIO (0, (length potentialKeys) - 1)
+
+  -- this seems to be extremly slow because (!!) has only O(n), the
+  -- potential keys should be save in a BTree or HashMap
+  e <- coprimes phi
+  let publicKey = Key e n
 
   -- get the second key
+  putStrLn "calculating the inverse element"
   (a, b) <- extendEuklid (value publicKey) phi
   let d = getFactor a b (value publicKey) phi
+  putStrLn "finished calculating the inverse element"
 
-  putStrLn $ "phi: " ++ (show phi)
-  putStrLn $ "public key: " ++ (show $ value publicKey)
-  putStrLn $ "choosen factor: " ++ (show d)
-  putStrLn $ "euklid: " ++ (show (a,b))
-
-  let privateKey = Key d (fromIntegral n)
-  return (publicKey, privateKey)
-
+  let keys = (publicKey, Key d n)
+  -- work around for damaged keys, which means generated keys so long
+  -- until they work. The checking function is O(n), so we have to
+  -- wait a long time
+  putStr "testing keys: "
+  testingKeys keys >>= (\x -> case x of
+                           False -> do
+                             putStrLn "keys are not valid"
+                             getKeys
+                           _ -> do
+                             putStrLn "keys are valid"
+                             return keys
+                       )
   where
     -- calculate all the coprimes until phi
-    coprimes phi = [y | y <-[(div phi 2)..phi],  ggT y phi == 1]
+    coprimes phi = do
+      e <- randomRIO(div phi 2, phi - 1)
+      case (ggT e phi == 1) of
+        True -> return e
+        _ -> coprimes phi
     ggT a 0 = a
     ggT 0 b = b
     ggT a b
@@ -100,3 +121,13 @@ getKeys = do
         let (q, r) = divMod a b
         (s, t) <- extendEuklid b r
         return (t, s - q * t)
+
+    testingKeys keys = do
+      let l = map (\x -> x == (equalTest keys x)) [1 .. 100]
+      check l 1
+        where
+          equalTest ((Key v1 n1), (Key v2 n2)) x = (((x^v1) `mod` n1)^v2) `mod` n2
+          check [] _ = return (True)
+          check (l:ls) n
+            | l = check ls $ n + 1
+              | otherwise = return (False)
