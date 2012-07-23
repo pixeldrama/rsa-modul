@@ -24,7 +24,7 @@ runTests = do
   let tCase6 = TestCase $ assertEqual "test encrypt/decrypt" str $ enDeCrypt str keys
 
   -- test the whole value set
-  let buildTestList keys = map (\x -> TestCase $ assertEqual ("map tests: " ++ (show x)) x (equalTest keys x)) [1 .. (modulus (fst keys)) - 1]
+  let buildTestList keys = map (\x -> TestCase $ assertEqual ("map tests: " ++ (show x)) x (equalTest keys x)) [1 .. 100]
 
   runTestTT $ TestList $ [tCase1, tCase2, tCase3, tCase4, tCase5, tCase6] ++ buildTestList staticKeys ++ buildTestList keys
   return ()

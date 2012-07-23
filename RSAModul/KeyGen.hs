@@ -107,7 +107,7 @@ getKeys = do
 
     -- ugly testing
     testingKeys keys = do
-      let l = map (\x -> x == (equalTest keys x)) [1 .. 100]
+      let l = map (\x -> x == (equalTest keys x)) [1 .. 20]
       check l 1
         where
           equalTest ((Key v1 n1), (Key v2 n2)) x = (((x^v1) `mod` n1)^v2) `mod` n2
