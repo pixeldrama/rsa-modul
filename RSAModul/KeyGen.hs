@@ -27,60 +27,34 @@ import RSAModul.Key
 
 -- set max for primes
 maxPrim :: Integer
-maxPrim = 1000
+maxPrim = 700
 
 -- | Generates a tuple of distinct random primes
-createRandomPrimes :: IO (Integer, Integer)
-createRandomPrimes =  do
-
-  putStrLn "generating primes"
-  let l = length primes
-  putStrLn "finished generating primes"
-
-  p <- randomRIO (div l 2, l - 1)
-  q <- randomRIO (div l 2, l - 1)
-  if (p == q) then
-    createRandomPrimes
-    else do
-    putStrLn "choose primes"
-    return (primes!!(fromIntegral p), primes!!(fromIntegral q))
+getPrimes :: Integer -> Integer -> (Integer, Integer)
+getPrimes r1 r2 =  (primes!!(fromIntegral r1), primes!!(fromIntegral r2))
   where
     -- very slow way to generate primes
     primes :: [Integer]
     primes = sieve [2..]
       where
-        sieve (l:ls)
-          | l <= maxPrim = l: sieve[x | x <-ls, mod x 2 /= 0]
-          | otherwise = []
-
--- | Calculate the modulus n and phi(n). The modulus is used for the
--- public and private key and must be stored. Phi is the result of the
--- Euler's phi function of n.
-n_phi :: IO (Integer, Integer) -- ^ the first value is n, the second phi(n)
-n_phi = do
-  (p,q) <- createRandomPrimes
-  return $ (p * q, (p - 1) * (q -1))
+        sieve (l:ls) = l: sieve[x | x <-ls, mod x 2 /= 0]
 
 -- | calculate the final keys
 getKeys :: IO (Key, Key)
 getKeys = do
-  (n, phi) <- n_phi
-
-
-  -- select a random value from the potential keys
-  --index <- randomRIO (0, (length potentialKeys) - 1)
+  (r1, r2) <- getRandomNumbers
+  let (p, q) = getPrimes r1 r2
+  let (n, phi) = ((p * q), (p -1) * (q -1))
 
   -- this seems to be extremly slow because (!!) has only O(n), the
   -- potential keys should be save in a BTree or HashMap
   e <- coprimes phi
-  let publicKey = Key e n
 
   -- get the second key
-  putStrLn "calculating the inverse element"
-  (a, b) <- extendEuklid (value publicKey) phi
-  let d = getFactor a b (value publicKey) phi
-  putStrLn "finished calculating the inverse element"
+  (a, b) <- extendEuklid e phi
+  let d = getFactor a b e phi
 
+  let publicKey = Key e n
   let keys = (publicKey, Key d n)
   -- work around for damaged keys, which means generated keys so long
   -- until they work. The checking function is O(n), so we have to
@@ -101,6 +75,7 @@ getKeys = do
       case (ggT e phi == 1) of
         True -> return e
         _ -> coprimes phi
+
     ggT a 0 = a
     ggT 0 b = b
     ggT a b
@@ -122,6 +97,15 @@ getKeys = do
         (s, t) <- extendEuklid b r
         return (t, s - q * t)
 
+    getRandomNumbers :: IO (Integer, Integer)
+    getRandomNumbers = do
+      r1 <- randomRIO(div maxPrim 2, maxPrim -1)
+      r2 <- randomRIO(div maxPrim 2, maxPrim -1)
+      if r1 == r2 then
+        getRandomNumbers
+        else return (r1, r2)
+
+    -- ugly testing
     testingKeys keys = do
       let l = map (\x -> x == (equalTest keys x)) [1 .. 100]
       check l 1
