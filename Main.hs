@@ -44,13 +44,13 @@ parseArgs args sizeArgs
       3 -> do
         message <- readFile (args!!2)
         key <- (readFile (args!!1) >>= return.read)
-        let encrMes = encrypt message key
+        encrMes <- return $ encrypt message key
         writeFile ((args!!2)++ ".encr") encrMes
       _ -> usageMessage
     "decrypt" -> case sizeArgs of
       3 -> do
         message <- readFile (args!!2)
         key <- (readFile (args!!1) >>= return.read)
-        putStrLn $ encrypt message key
+        putStrLn $ decrypt message key
       _ -> usageMessage
     _ -> usageMessage

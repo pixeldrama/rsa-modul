@@ -27,7 +27,7 @@ import RSAModul.Key
 
 -- set max for primes
 maxPrim :: Integer
-maxPrim = 700
+maxPrim = 500
 
 -- | Generates a tuple of distinct random primes
 getPrimes :: Integer -> Integer -> (Integer, Integer)

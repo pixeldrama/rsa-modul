@@ -24,9 +24,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module RSAModul.Crypto where
   
 import RSAModul.Key
+import Codec.Binary.Base64.String
+import Data.List.Split
+import Data.Char
   
 encrypt :: String -> Key -> String
-encrypt str (Key v n) = map (\c -> toEnum (fromIntegral ((charToInt c)^v `mod` n)::Int)) str
+encrypt str (Key v n) = encode $ concat $ map (\c -> (show $ fromIntegral ((charToInt c)^v `mod` n)) ++ ",") str
   where
     --convert Char->Int->Integer
     charToInt c = fromIntegral (fromEnum c)    
+
+decrypt :: String -> Key -> String
+decrypt str (Key v n) = conv $ filtList str
+  where
+    conv l = map (\x -> chr $ fromIntegral (((read x) :: Integer)^v `mod` n)) l
+    filtList str = filter (\x -> x /= "=" && x /= "") $ splitOn "," $ decode str
