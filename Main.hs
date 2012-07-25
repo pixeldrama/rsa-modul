@@ -25,18 +25,19 @@ import System.Environment
 import RSAModul.WriteKeys
 import RSAModul.Key
 import RSAModul.Crypto
+import RSAModul.Crack
 
 
-usageMessage = do putStrLn "usage: keygen | encrypt <path/to/pubkey> <file> | decrypt <path/to/privkey> <file"
+usageMessage = do putStrLn "usage: keygen | encrypt <path/to/pubkey> <file> | decrypt <path/to/privkey> <file> | crack <path/to/pubkey"
 
 main = do
   args <- getArgs
   let sizeArgs = length args
-  parseArgs args sizeArgs    
-  
-parseArgs args sizeArgs 
+  parseArgs args sizeArgs
+
+parseArgs args sizeArgs
   | sizeArgs == 0 = usageMessage
-  | otherwise = case (args!!0) of 
+  | otherwise = case (args!!0) of
     "keygen" -> case sizeArgs of
       1 -> writeKeys
       2 -> writeNamedKeys (args!!1)
@@ -52,5 +53,11 @@ parseArgs args sizeArgs
         message <- readFile (args!!2)
         key <- (readFile (args!!1) >>= return.read)
         putStrLn $ decrypt message key
+      _ -> usageMessage
+    "crack" -> case sizeArgs of
+      2 -> do
+        key <- (readFile (args!!1) >>= return.read)
+        let crackedKey = getPrivateKey key
+        writeFile "crackkey" $ show crackedKey
       _ -> usageMessage
     _ -> usageMessage
