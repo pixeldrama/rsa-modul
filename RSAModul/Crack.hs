@@ -26,9 +26,9 @@ import RSAModul.Key
 
 -- | Gets the public key and calculate the private key
 getPrivateKey :: Key -> Key
-getPrivateKey (Key v m)  =  Key (getPrivateKey' [1.. restorPhi] v  restorPhi) m
+getPrivateKey (Key v m)  =  Key (getPrivateKey' [1.. getPhi -1] v  getPhi) m
   where 
-    restorPhi = (phi $ primeFactorization m) - 1
+    getPhi = (phi $ primeFactorization m)
     getPrivateKey' [] _ _ = error "key not found"
     getPrivateKey' (l:ls) v m  
       | l*v `mod` m == 1 = l
