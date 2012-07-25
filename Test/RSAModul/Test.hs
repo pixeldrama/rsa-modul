@@ -1,6 +1,8 @@
 import RSAModul.KeyGen
 import RSAModul.Key
 import RSAModul.Crypto
+import RSAModul.Crack
+
 import System.Random
 
 import Test.HUnit
@@ -23,10 +25,21 @@ runTests = do
 
   let tCase6 = TestCase $ assertEqual "test encrypt/decrypt" str $ enDeCrypt str keys
 
-  -- test the whole value set
-  let buildTestList keys = map (\x -> TestCase $ assertEqual ("map tests: " ++ (show x)) x (equalTest keys x)) [1 .. 100]
+  let tCase7 = TestCase $ assertEqual "test crack static keys" (snd staticKeys) $ getPrivateKey $ fst staticKeys
 
-  runTestTT $ TestList $ [tCase1, tCase2, tCase3, tCase4, tCase5, tCase6] ++ buildTestList staticKeys ++ buildTestList keys
+  let tCase8 = TestCase $ assertEqual "test crack random keys" (snd keys) $ getPrivateKey $ fst keys
+
+  -- test the whole value set
+  let buildTestList keys = map (\x -> TestCase $ assertEqual ("map tests: " ++ (show x)) x (equalTest keys x)) [1 .. 20]
+
+  runTestTT $ TestList $ [tCase1
+                         , tCase2
+                         , tCase3
+                         , tCase4,
+                           tCase5,
+                           tCase6,
+                           tCase7,
+                           tCase8] ++ buildTestList staticKeys ++ buildTestList keys
   return ()
     where
       equalTest ((Key v1 n1), (Key v2 n2)) x = (((x^v1) `mod` n1)^v2) `mod` n2
