@@ -39,3 +39,10 @@ decrypt str (Key v n) = conv $ filtList str
   where
     conv l = map (\x -> chr $ fromIntegral (((read x) :: Integer)^v `mod` n)) l
     filtList str = filter (\x -> x /= "=" && x /= "") $ splitOn "," $ decode str
+
+crack :: Key -> Integer -> Key
+crack (Key v m) x = crack' v m x 1
+  where
+    crack' v m x n  
+      | (x^v)^n `mod` m == x = Key x m
+      | otherwise = crack' v m x (n + 1)

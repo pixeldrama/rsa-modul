@@ -23,21 +23,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module RSAModul.KeyGen(getKeys) where
 
 import System.Random
-import RSAModul.Key
 
--- set max for primes
-maxPrim :: Integer
-maxPrim = 500
+import RSAModul.Key
+import RSAModul.Helper
+
 
 -- | Generates a tuple of distinct random primes
 getPrimes :: Integer -> Integer -> (Integer, Integer)
 getPrimes r1 r2 =  (primes!!(fromIntegral r1), primes!!(fromIntegral r2))
-  where
-    -- very slow way to generate primes
-    primes :: [Integer]
-    primes = sieve [2..]
-      where
-        sieve (l:ls) = l: sieve[x | x <-ls, mod x l /= 0]
 
 -- | calculate the final keys
 getKeys :: IO (Key, Key)
@@ -69,18 +62,11 @@ getKeys = do
                              return keys
                        )
   where
-    -- calculate all the coprimes until phi
     coprimes phi = do
       e <- randomRIO(div phi 2, phi - 1)
       case (ggT e phi == 1) of
         True -> return e
         _ -> coprimes phi
-
-    ggT a 0 = a
-    ggT 0 b = b
-    ggT a b
-      | a > b = ggT b (mod a b)
-      | otherwise = ggT a (mod b a)
 
     getFactor a b f phi
       | a*f `mod` phi == 1 = pos a
@@ -89,21 +75,6 @@ getKeys = do
           pos x
             | x < 0 = phi + x
             | otherwise = x
-
-    extendEuklid a b
-      | b == 0 = return (1, 0)
-      | otherwise = do
-        let (q, r) = divMod a b
-        (s, t) <- extendEuklid b r
-        return (t, s - q * t)
-
-    getRandomNumbers :: IO (Integer, Integer)
-    getRandomNumbers = do
-      r1 <- randomRIO(div maxPrim 2, maxPrim -1)
-      r2 <- randomRIO(div maxPrim 2, maxPrim -1)
-      if r1 == r2 then
-        getRandomNumbers
-        else return (r1, r2)
 
     -- ugly testing
     testingKeys keys = do
