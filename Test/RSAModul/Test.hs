@@ -30,4 +30,4 @@ runTests = do
   return ()
     where
       equalTest ((Key v1 n1), (Key v2 n2)) x = (((x^v1) `mod` n1)^v2) `mod` n2
-      enDeCrypt str (pub, priv) = encrypt (encrypt str pub) priv
+      enDeCrypt str (pub, priv) = decrypt (encrypt str pub) priv
