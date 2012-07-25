@@ -24,12 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module RSAModul.Crypto where
   
 import RSAModul.Key
+import RSAModul.Helper as H
+
 import Codec.Binary.Base64.String
 import Data.List.Split
 import Data.Char
   
 encrypt :: String -> Key -> String
-encrypt str (Key v n) = encode $ concat $ map (\c -> (show $ fromIntegral ((charToInt c)^v `mod` n)) ++ ",") str
+encrypt str (Key v n) = encode $ concat $ map (\c -> (show $ fromIntegral (H.binExpM (charToInt c) v n)) ++ ",") str
   where
     --convert Char->Int->Integer
     charToInt c = fromIntegral (fromEnum c)    
@@ -37,12 +39,5 @@ encrypt str (Key v n) = encode $ concat $ map (\c -> (show $ fromIntegral ((char
 decrypt :: String -> Key -> String
 decrypt str (Key v n) = conv $ filtList str
   where
-    conv l = map (\x -> chr $ fromIntegral (((read x) :: Integer)^v `mod` n)) l
+    conv l = map (\x -> chr $ fromIntegral (H.binExpM ((read x) :: Integer) v n)) l
     filtList str = filter (\x -> x /= "=" && x /= "") $ splitOn "," $ decode str
-
-crack :: Key -> Integer -> Key
-crack (Key v m) x = crack' v m x 1
-  where
-    crack' v m x n  
-      | (x^v)^n `mod` m == x = Key x m
-      | otherwise = crack' v m x (n + 1)
