@@ -33,7 +33,7 @@ ggT 0 b = b
 ggT a b
   | a > b = ggT b (mod a b)
   | otherwise = ggT a (mod b a)
-                
+
 extendEuklid a b
   | b == 0 = return (1, 0)
   | otherwise = do
@@ -66,11 +66,11 @@ primeFactorization n = nub $ primeFactors n  primes []
   where
     primeFactors 1 primes (x:[]) = []
     primeFactors 1 primes res  = res
-    primeFactors n l@(prime:primes) res 
+    primeFactors n l@(prime:primes) res
       | n `mod` prime == 0 = primeFactors (n `div` prime) l (prime:res)
       | otherwise = primeFactors n primes res
 
-          
+
 
 -- | euler phi(n). It' s endrecursive function.
 phi :: [Integer] -> Integer
