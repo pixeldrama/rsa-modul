@@ -79,3 +79,14 @@ phi x = phi' x  1
     phi' [] r = r
     phi' (p:primes) r = phi' primes (r * (p-1))
 
+-- | Binary Expotentiation function. For details visit
+-- <http://en.wikipedia.org/wiki/Exponentiation_by_squaring>
+modulus :: Integer -> Integer -> Integer -> Integer
+modulus basis exp m = modulus' basis exp m
+  where
+    modulus' _ 0 _ = 1
+    modulus' basis exp m
+      | exp `mod` 2 == 0 = nextExp * nextExp `mod` m
+      | otherwise = basis * (modulus basis (exp - 1) m) `mod` m
+        where
+          nextExp = (modulus basis (exp `div` 2) m) `mod` m
