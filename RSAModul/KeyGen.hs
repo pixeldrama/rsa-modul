@@ -37,7 +37,7 @@ getPrimes r1 r2 =  (primes!!(fromIntegral r1), primes!!(fromIntegral r2))
     primes :: [Integer]
     primes = sieve [2..]
       where
-        sieve (l:ls) = l: sieve[x | x <-ls, mod x 2 /= 0]
+        sieve (l:ls) = l: sieve[x | x <-ls, mod x l /= 0]
 
 -- | calculate the final keys
 getKeys :: IO (Key, Key)
