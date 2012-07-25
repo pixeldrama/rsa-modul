@@ -18,15 +18,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+-- | Try to factorize a rsa modulus and calculate the private key
 module RSAModul.Crack where
 
 import RSAModul.Helper
 import RSAModul.Key
 
+-- | Gets the public key and calculate the private key
 getPrivateKey :: Key -> Key
-getPrivateKey (Key v m)  =  getPrivateKey' [1.. ((phi $ primeFactorization m) - 1)] v m 
+getPrivateKey (Key v m)  =  Key (getPrivateKey' [1.. restorPhi] v  restorPhi) m
   where 
+    restorPhi = (phi $ primeFactorization m) - 1
     getPrivateKey' [] _ _ = error "key not found"
     getPrivateKey' (l:ls) v m  
-      | l*v `mod` m == 1 = Key l m
+      | l*v `mod` m == 1 = l
       | otherwise = getPrivateKey' ls v m

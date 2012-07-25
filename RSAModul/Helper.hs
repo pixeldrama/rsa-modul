@@ -72,9 +72,10 @@ primeFactorization n = nub $ primeFactors n  primes []
 
 
 
--- | euler phi(n). It' s endrecursive function.
+-- | euler phi(n). It's an endrecursive function.
 phi :: [Integer] -> Integer
 phi x = phi' x  1
   where
     phi' [] r = r
-    phi' (p:primes) r = phi' primes (r*p)
+    phi' (p:primes) r = phi' primes (r * (p-1))
+
