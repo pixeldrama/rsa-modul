@@ -48,19 +48,7 @@ getKeys = do
   let d = getFactor a b e phi
 
   let publicKey = Key e n
-  let keys = (publicKey, Key d n)
-  -- work around for damaged keys, which means generated keys so long
-  -- until they work. The checking function is O(n), so we have to
-  -- wait a long time
-  putStr "testing keys: "
-  testingKeys keys >>= (\x -> case x of
-                           False -> do
-                             putStrLn "keys are not valid"
-                             getKeys
-                           _ -> do
-                             putStrLn "keys are valid"
-                             return keys
-                       )
+  return (publicKey, Key d n)
   where
     coprimes phi = do
       e <- randomRIO(div phi 2, phi - 1)
@@ -75,14 +63,3 @@ getKeys = do
           pos x
             | x < 0 = phi + x
             | otherwise = x
-
-    -- ugly testing
-    testingKeys keys = do
-      let l = map (\x -> x == (equalTest keys x)) [1 .. 20]
-      check l 1
-        where
-          equalTest ((Key v1 n1), (Key v2 n2)) x = (((x^v1) `mod` n1)^v2) `mod` n2
-          check [] _ = return (True)
-          check (l:ls) n
-            | l = check ls $ n + 1
-              | otherwise = return (False)
