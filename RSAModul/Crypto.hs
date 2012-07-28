@@ -18,9 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- | The crypto modul. There can be done some optimizations, because
--- the modulo operation could be calcalute faster than the haskell
--- function mod do.
+-- | The crypto modul. The cipher text is converted in base64.
 module RSAModul.Crypto where
   
 import RSAModul.Key
